@@ -1,4 +1,7 @@
-﻿var todos = new List<string>();
+﻿
+using System;
+
+var todos = new List<string>();
 
 Console.WriteLine("Hello!");
 
@@ -37,43 +40,51 @@ while (!shallExit)
     }
 }
 
+// Список задач
 void SeeAllTodos()
 {
     if (todos.Count == 0)
     {
         ShowNoTodosMessage();
+        return;
     }
-    else
+
+    for (int i = 0; i < todos.Count; i++)
     {
-        for (int i = 0; i < todos.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {todos[i]}");
-        }
+        Console.WriteLine($"{i + 1}. {todos[i]}");
     }
+
 }
 
+//Добавляем TODO
 void AddTodo()
 {
-    bool isValidDescripttion = false;
-    while (!isValidDescripttion)
+    // Запрашиваем у пользователя описание todo.
+    // Как только пользователь вводит допустимое описание он помещает его в список задач.
+    string description;
+    do
     {
         Console.WriteLine("Enter the TODO description:");
-        var description = Console.ReadLine();
+        description = Console.ReadLine();
+    } while (!IsDescriptionValid(description));
 
-        if (description == "")
-        {
-            Console.WriteLine("The discription cannot be empty");
-        }
-        else if (todos.Contains(description))
-        {
-            Console.WriteLine("The description must be unique.");
-        }
-        else
-        {
-            isValidDescripttion = true;
-            todos.Add(description);
-        }
+    todos.Add(description);
+}
+
+// Коррекнтность описания TODO
+bool IsDescriptionValid(string description)
+{
+    if (description == "")
+    {
+        Console.WriteLine("The discription cannot be empty");
+        return false;
     }
+    else if (todos.Contains(description))
+    {
+        Console.WriteLine("The description must be unique.");
+        return false;
+    }
+    return true;
 }
 
 void RemoveTodo()
@@ -83,38 +94,45 @@ void RemoveTodo()
         ShowNoTodosMessage();
         return;
     }
-    bool isIndexValid = false;
-    while (!isIndexValid)
+
+    int index;
+    do
     {
         Console.WriteLine("Select the index of the TODO you want to remove");
         SeeAllTodos();
-        var userInput = Console.ReadLine();
-        if (userInput == "")
-        {
-            Console.WriteLine("Selected index cannot be empty");
-            continue;
-        }
+    } while (!TryReadIndex(out index));
 
-        if (int.TryParse(userInput, out int index) &&
-            index >= 1 &&
-            index <= todos.Count)
-        {
-            var indexOfTodo = index - 1;
-            var todoToBeRemoved = todos[indexOfTodo];
-            todos.RemoveAt(indexOfTodo);
-            isIndexValid = true;
-            Console.WriteLine("TODO removed: " + todoToBeRemoved);
-        }
-        else
-        {
-            Console.WriteLine("The given index is not valid.");
-        }
-    }
+    RemoveTodoAtindex(index - 1);
 }
 
+void RemoveTodoAtindex(int index)
+{
+    //Удаляет задачу по заданному индексу
+    var todoToBeRemoved = todos[index];
+    todos.RemoveAt(index);
+    Console.WriteLine("TODO removed: " + todoToBeRemoved);
+}
 
+bool TryReadIndex(out int index)
+{
+    var userInput = Console.ReadLine();
+    if (userInput == "")
+    {
+        index = 0;
+        Console.WriteLine("Selected index cannot be empty");
+        return false;
+    }
 
+    if (int.TryParse(userInput, out index) &&
+        index >= 1 &&
+        index <= todos.Count)
+    {
+        return true;
+    }
+    Console.WriteLine("The given index is not valid.");
+    return false;
 
+}
 
 static void ShowNoTodosMessage()
 {
